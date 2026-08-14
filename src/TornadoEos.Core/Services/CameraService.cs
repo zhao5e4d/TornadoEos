@@ -132,7 +132,7 @@ public sealed class CameraService : IDisposable
                 throw new UnsupportedLanguageException(language.IsoCode);
 
             RaiseLog(LogLevel.Info,
-                $"'{language.EnglishName}' is hidden by the language lock — disabling lock to expose it.");
+                $"“{language.ChineseName}”被区域语言锁隐藏，正在关闭语言锁以显示该语言。");
             await SetLanguageLockAsync(false, cancellationToken).ConfigureAwait(false);
         }
 

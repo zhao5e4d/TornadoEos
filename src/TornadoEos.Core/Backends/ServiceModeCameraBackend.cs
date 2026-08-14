@@ -34,11 +34,10 @@ namespace TornadoEos.Core.Backends;
 public sealed class ServiceModeCameraBackend : ICameraBackend
 {
     private const string NotImplemented =
-        "Real-hardware service-mode protocol for the EOS R50 is not bundled with this " +
-        "project (it is proprietary/undocumented). Use the simulated backend, or supply " +
-        "a verified protocol implementation in ServiceModeCameraBackend.";
+        "项目未包含 EOS R50 真机服务模式协议，因为该协议专有且未公开。" +
+        "请使用模拟后端，或在 ServiceModeCameraBackend 中提供经过验证的协议实现。";
 
-    public string Name => "Canon Service Mode (USB/PTP) — not implemented";
+    public string Name => "佳能服务模式（USB/PTP）— 尚未实现";
 
     public bool IsConnected => false;
 

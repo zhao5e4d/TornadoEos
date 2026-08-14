@@ -31,10 +31,10 @@ public static class CameraDiagnostics
             if (!dev.IsCanon)
                 continue;
 
-            log?.Invoke($"MTP capability probe on {dev.Model ?? "Canon device"}...");
+            log?.Invoke($"正在探测 {dev.Model ?? "佳能设备"} 的 MTP 能力……");
             mtp.Add(MtpCommandProbe.ProbeDevice(dev.DeviceId, dev.Model, log));
 
-            log?.Invoke($"EOS session probe on {dev.Model ?? "Canon device"} (read-only remote mode)...");
+            log?.Invoke($"正在探测 {dev.Model ?? "佳能设备"} 的 EOS 会话（只读遥控模式）……");
             eos.Add(EosSessionProbe.ProbeDevice(dev.DeviceId, dev.Model, log));
         }
 
@@ -49,14 +49,14 @@ public static class CameraDiagnostics
         IReadOnlyList<EosSessionResult> eos)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Tornado EOS · Camera diagnostics (read-only)");
+        sb.AppendLine("Tornado EOS · 相机诊断报告（只读）");
         sb.AppendLine(new string('=', 78));
         sb.AppendLine();
 
         if (wpd.Count == 0)
         {
-            sb.AppendLine("No portable devices found.");
-            sb.AppendLine("Connect the camera via USB, power it on, and run again.");
+            sb.AppendLine("未找到便携设备。");
+            sb.AppendLine("请通过 USB 连接并开启相机，然后重新运行诊断。");
             return sb.ToString();
         }
 
@@ -66,8 +66,7 @@ public static class CameraDiagnostics
 
         sb.AppendLine();
         sb.AppendLine(new string('=', 78));
-        sb.AppendLine("All probes are read-only / reversible. No property was written and");
-        sb.AppendLine("service mode was not entered.");
+        sb.AppendLine("所有探测均为只读操作；没有写入任何属性，也没有进入服务模式。");
         return sb.ToString();
     }
 
@@ -77,14 +76,14 @@ public static class CameraDiagnostics
         IReadOnlyList<EosSessionResult> eos)
     {
         if (wpd.Count == 0)
-            return "No camera detected";
+            return "未检测到相机";
 
         var canon = new List<WpdProbeDevice>();
         foreach (var d in wpd)
             if (d.IsCanon) canon.Add(d);
 
         if (canon.Count == 0)
-            return $"{wpd.Count} device(s), no Canon camera";
+            return $"检测到 {wpd.Count} 个设备，但没有佳能相机";
 
         var parts = new List<string>();
         foreach (var d in canon)
@@ -95,22 +94,22 @@ public static class CameraDiagnostics
         foreach (var c in mtp) opcodes += c.VendorOperationCodes.Count;
         foreach (var s in eos) eosProps += s.Properties.Count;
 
-        return $"{string.Join(", ", parts)} · {wpdProps} WPD props · {opcodes} vendor opcodes · {eosProps} EOS props";
+        return $"{string.Join(", ", parts)} · {wpdProps} 个 WPD 属性 · {opcodes} 个厂商操作码 · {eosProps} 个 EOS 属性";
     }
 
     private static void AppendWpdSection(StringBuilder sb, IReadOnlyList<WpdProbeDevice> devices)
     {
-        sb.AppendLine("WPD / PTP DEVICE PROPERTIES");
+        sb.AppendLine("WPD / PTP 设备属性");
         sb.AppendLine(new string('-', 78));
 
         foreach (var dev in devices)
         {
             sb.AppendLine();
-            sb.AppendLine($"Device: {dev.Model ?? dev.FriendlyName ?? "(unknown)"}{(dev.IsCanon ? " [CANON]" : "")}");
-            sb.AppendLine($"  Manufacturer : {dev.Manufacturer ?? "-"}");
-            sb.AppendLine($"  Firmware     : {FindFirmware(dev) ?? "-"}");
-            sb.AppendLine($"  Serial       : {FindSerial(dev) ?? "-"}");
-            sb.AppendLine($"  DeviceId     : {dev.DeviceId}");
+            sb.AppendLine($"设备：{dev.Model ?? dev.FriendlyName ?? "（未知）"}{(dev.IsCanon ? " [CANON]" : "")}");
+            sb.AppendLine($"  制造商       : {dev.Manufacturer ?? "-"}");
+            sb.AppendLine($"  固件版本     : {FindFirmware(dev) ?? "-"}");
+            sb.AppendLine($"  序列号       : {FindSerial(dev) ?? "-"}");
+            sb.AppendLine($"  设备 ID      : {dev.DeviceId}");
             sb.AppendLine();
 
             foreach (var p in dev.Properties)
@@ -124,19 +123,19 @@ public static class CameraDiagnostics
                 if (p.IsVendorOrUnknown) vendorCount++;
 
             sb.AppendLine();
-            sb.AppendLine($"  {dev.Properties.Count} properties, {vendorCount} vendor/unknown.");
+            sb.AppendLine($"  共 {dev.Properties.Count} 个属性，其中 {vendorCount} 个为厂商或未知属性。");
         }
         sb.AppendLine();
     }
 
     private static void AppendMtpSection(StringBuilder sb, IReadOnlyList<MtpCapabilities> caps)
     {
-        sb.AppendLine("MTP VENDOR CAPABILITIES");
+        sb.AppendLine("MTP 厂商能力");
         sb.AppendLine(new string('-', 78));
 
         if (caps.Count == 0)
         {
-            sb.AppendLine("  (no Canon device probed)");
+            sb.AppendLine("  （没有可探测的佳能设备）");
             sb.AppendLine();
             return;
         }
@@ -144,11 +143,11 @@ public static class CameraDiagnostics
         foreach (var cap in caps)
         {
             sb.AppendLine();
-            sb.AppendLine($"Device: {cap.Model ?? "(canon)"}");
+            sb.AppendLine($"设备：{cap.Model ?? "（佳能）"}");
             if (cap.Error is not null)
-                sb.AppendLine($"  Error: {cap.Error}");
-            sb.AppendLine($"  Vendor extension : {cap.VendorExtensionDescription ?? "(none / not reported)"}");
-            sb.AppendLine($"  Vendor opcodes   : {cap.VendorOperationCodes.Count}");
+                sb.AppendLine($"  错误：{cap.Error}");
+            sb.AppendLine($"  厂商扩展说明：{cap.VendorExtensionDescription ?? "（无 / 未报告）"}");
+            sb.AppendLine($"  厂商操作码：{cap.VendorOperationCodes.Count}");
             if (cap.VendorOperationCodes.Count > 0)
             {
                 var codes = new List<string>();
@@ -163,12 +162,12 @@ public static class CameraDiagnostics
 
     private static void AppendEosSection(StringBuilder sb, IReadOnlyList<EosSessionResult> sessions)
     {
-        sb.AppendLine("EOS SESSION (read-only remote mode)");
+        sb.AppendLine("EOS 会话（只读遥控模式）");
         sb.AppendLine(new string('-', 78));
 
         if (sessions.Count == 0)
         {
-            sb.AppendLine("  (no Canon device probed)");
+            sb.AppendLine("  （没有可探测的佳能设备）");
             sb.AppendLine();
             return;
         }
@@ -176,15 +175,15 @@ public static class CameraDiagnostics
         foreach (var s in sessions)
         {
             sb.AppendLine();
-            sb.AppendLine($"Device: {s.Model ?? "(canon)"}");
+            sb.AppendLine($"设备：{s.Model ?? "（佳能）"}");
             if (s.Error is not null)
-                sb.AppendLine($"  Error: {s.Error}");
-            sb.AppendLine($"  EOS events     : {s.EventsSupported.Count}");
-            sb.AppendLine($"  EOS properties : {s.Properties.Count}");
+                sb.AppendLine($"  错误：{s.Error}");
+            sb.AppendLine($"  EOS 事件：{s.EventsSupported.Count}");
+            sb.AppendLine($"  EOS 属性：{s.Properties.Count}");
             if (s.Properties.Count > 0)
             {
                 sb.AppendLine();
-                sb.AppendLine($"  {"Code",-8} {"Name",-22} Current value");
+                sb.AppendLine($"  {"代码",-8} {"名称",-22} 当前值");
                 sb.AppendLine("  " + new string('-', 74));
                 foreach (var p in s.Properties)
                 {

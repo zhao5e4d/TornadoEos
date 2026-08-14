@@ -73,19 +73,19 @@ public static class WpdPropertyProbe
     /// <summary>Probes all connected portable devices. Optionally reports progress via <paramref name="log"/>.</summary>
     public static IReadOnlyList<WpdProbeDevice> Run(Action<string>? log = null)
     {
-        log?.Invoke("Enumerating USB portable devices (WPD)...");
+        log?.Invoke("正在枚举 USB 便携设备（WPD）……");
         var manager = (IPortableDeviceManager)Wpd.CreateInstance(Wpd.CLSID_PortableDeviceManager);
         uint count = 0;
         manager.GetDevices(null, ref count);
         if (count == 0)
         {
-            log?.Invoke("No portable/USB devices found. Connect the camera (powered on) and retry.");
+            log?.Invoke("未找到便携式或 USB 设备。请连接并开启相机后重试。");
             return Array.Empty<WpdProbeDevice>();
         }
 
         var ids = new string[count];
         manager.GetDevices(ids, ref count);
-        log?.Invoke($"Found {count} portable device(s). Reading properties (read-only)...");
+        log?.Invoke($"找到 {count} 个便携设备，正在只读读取属性……");
 
         var results = new List<WpdProbeDevice>();
         foreach (var id in ids)
@@ -96,7 +96,7 @@ public static class WpdPropertyProbe
             }
             catch (Exception ex)
             {
-                log?.Invoke($"  Skipped a device: {ex.Message}");
+                log?.Invoke($"  已跳过一个设备：{ex.Message}");
             }
         }
         return results;
@@ -140,7 +140,7 @@ public static class WpdPropertyProbe
             string? friendly = Find(entries, DeviceCategory, 12);
             bool isCanon = $"{manufacturer} {model} {friendly}".ToLowerInvariant().Contains("canon");
 
-            log?.Invoke($"  {(isCanon ? "[Canon] " : "")}{model ?? friendly ?? id}: {entries.Count} properties.");
+            log?.Invoke($"  {(isCanon ? "[Canon] " : "")}{model ?? friendly ?? id}：{entries.Count} 个属性。");
             return new WpdProbeDevice(id, manufacturer, model, friendly, isCanon, entries);
         }
         finally

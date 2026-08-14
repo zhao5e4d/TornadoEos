@@ -2,12 +2,12 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:TornadoEos.App.ViewModels"
-        Title="Tornado EOS — Menu Language Utility"
+        Title="Tornado EOS — 佳能相机菜单语言工具"
         Height="780" Width="1040"
         MinHeight="640" MinWidth="900"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgBrush}"
-        FontFamily="Segoe UI"
+        FontFamily="Microsoft YaHei UI, Segoe UI"
         TextOptions.TextFormattingMode="Ideal">
 
     <Grid Margin="20">
@@ -22,7 +22,7 @@
             <StackPanel>
                 <TextBlock Text="TORNADO EOS" Foreground="{StaticResource TextBrush}"
                            FontSize="24" FontWeight="Bold" />
-                <TextBlock Text="Canon EOS service utility · Menu language" 
+                <TextBlock Text="佳能 EOS 相机工具 · 菜单语言与只读诊断"
                            Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="0,2,0,0" />
             </StackPanel>
             <Border HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -56,7 +56,7 @@
             <!-- Camera / connection card -->
             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                 <StackPanel>
-                    <TextBlock Text="CAMERA" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="相机信息" Style="{StaticResource SectionTitle}" />
 
                     <Grid Margin="0,0,0,6">
                         <Grid.ColumnDefinitions>
@@ -71,38 +71,38 @@
                             <RowDefinition Height="28" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Model" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="型号" Style="{StaticResource FieldLabel}" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CameraModel}" Style="{StaticResource FieldValue}" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Serial No." Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="序列号" Style="{StaticResource FieldLabel}" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SerialNumber}" Style="{StaticResource FieldValue}" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Firmware" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="固件版本" Style="{StaticResource FieldLabel}" />
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FirmwareVersion}" Style="{StaticResource FieldValue}" />
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Battery" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="电量" Style="{StaticResource FieldLabel}" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding BatteryText}" Style="{StaticResource FieldValue}" />
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Port" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="连接端口" Style="{StaticResource FieldLabel}" />
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PortDescription}" Style="{StaticResource FieldValue}" />
                     </Grid>
 
                     <Separator Margin="0,12" Background="{StaticResource PanelBorderBrush}" />
 
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="Connect" Style="{StaticResource PrimaryButton}"
+                        <Button Content="连接相机" Style="{StaticResource PrimaryButton}"
                                 Command="{Binding ConnectCommand}" Width="150" Margin="0,0,10,0" />
-                        <Button Content="Disconnect" Style="{StaticResource GhostButton}"
+                        <Button Content="断开连接" Style="{StaticResource GhostButton}"
                                 Command="{Binding DisconnectCommand}" Width="150" />
                     </StackPanel>
 
-                    <Button Content="Run diagnostics" Style="{StaticResource GhostButton}"
+                    <Button Content="运行只读诊断" Style="{StaticResource GhostButton}"
                             Command="{Binding RunDiagnosticsCommand}"
                             HorizontalAlignment="Stretch" Margin="0,12,0,0"
-                            ToolTip="Read-only WPD, MTP, and EOS property scan (does not modify the camera)" />
+                            ToolTip="只读取 WPD、MTP 和 EOS 属性，不会修改相机" />
                 </StackPanel>
             </Border>
 
             <!-- Language card -->
             <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
                 <StackPanel>
-                    <TextBlock Text="MENU LANGUAGE" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="菜单语言" Style="{StaticResource SectionTitle}" />
 
                     <Grid Margin="0,0,0,4">
                         <Grid.ColumnDefinitions>
@@ -110,20 +110,20 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Current on camera" Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="相机当前语言" Style="{StaticResource FieldLabel}" />
                             <TextBlock Text="{Binding CurrentLanguageText}" Style="{StaticResource FieldValue}"
                                        FontSize="15" Margin="0,2,0,0" />
                         </StackPanel>
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="Regional language lock" Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="区域语言锁" Style="{StaticResource FieldLabel}" />
                             <TextBlock Margin="0,2,0,0" FontSize="15">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource FieldValue}">
-                                        <Setter Property="Text" Value="Disabled (all languages)" />
+                                        <Setter Property="Text" Value="已关闭（全部语言可见）" />
                                         <Setter Property="Foreground" Value="#FF3FB950" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding LanguageLockEnabled}" Value="True">
-                                                <Setter Property="Text" Value="Enabled (EN / JA only)" />
+                                                <Setter Property="Text" Value="已启用（仅英语 / 日语）" />
                                                 <Setter Property="Foreground" Value="#FFE3B341" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -135,7 +135,7 @@
 
                     <Separator Margin="0,14" Background="{StaticResource PanelBorderBrush}" />
 
-                    <TextBlock Text="Set menu language to" Style="{StaticResource FieldLabel}" Margin="0,0,0,6" />
+                    <TextBlock Text="要设置的菜单语言" Style="{StaticResource FieldLabel}" Margin="0,0,0,6" />
                     <ComboBox ItemsSource="{Binding Languages}"
                               SelectedItem="{Binding SelectedLanguage}"
                               IsEnabled="{Binding IsConnected}"
@@ -143,18 +143,18 @@
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding EnglishName}" FontWeight="Medium" Width="170" />
+                                    <TextBlock Text="{Binding ChineseName}" FontWeight="Medium" Width="170" />
                                     <TextBlock Text="{Binding NativeName}" Foreground="{StaticResource MutedBrush}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <CheckBox Content="Automatically disable the language lock if the chosen language is hidden"
+                    <CheckBox Content="目标语言被隐藏时，自动关闭区域语言锁"
                               IsChecked="{Binding AutoUnlock}"
                               Foreground="{StaticResource MutedBrush}" Margin="2,14,0,0" />
 
-                    <Button Content="Apply to camera" Style="{StaticResource PrimaryButton}"
+                    <Button Content="应用到相机" Style="{StaticResource PrimaryButton}"
                             Command="{Binding ApplyLanguageCommand}"
                             HorizontalAlignment="Left" Width="190" Margin="0,16,0,0" />
 
@@ -172,7 +172,7 @@
         <!-- Log / diagnostics -->
         <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,20,0,0">
             <TabControl>
-                <TabItem Header="Activity log">
+                <TabItem Header="操作日志">
                     <ListBox ItemsSource="{Binding LogEntries}" Background="Transparent" BorderThickness="0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              FontFamily="Cascadia Mono, Consolas" FontSize="12" Margin="0,8,0,0">
@@ -203,14 +203,14 @@
                     </ListBox>
                 </TabItem>
 
-                <TabItem Header="Diagnostics">
+                <TabItem Header="只读诊断">
                     <DockPanel Margin="0,8,0,0">
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                            <Button Content="Run diagnostics" Style="{StaticResource PrimaryButton}"
+                            <Button Content="运行诊断" Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunDiagnosticsCommand}" Width="150" Margin="0,0,10,0" />
-                            <Button Content="Copy report" Style="{StaticResource GhostButton}"
+                            <Button Content="复制报告" Style="{StaticResource GhostButton}"
                                     Command="{Binding CopyDiagnosticsCommand}" Width="120" Margin="0,0,10,0" />
-                            <Button Content="Save as…" Style="{StaticResource GhostButton}"
+                            <Button Content="另存为…" Style="{StaticResource GhostButton}"
                                     Command="{Binding SaveDiagnosticsCommand}" Width="110" Margin="0,0,10,0" />
                             <TextBlock VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"
                                        FontSize="12" Text="{Binding DiagnosticsSummary}" TextWrapping="Wrap" />

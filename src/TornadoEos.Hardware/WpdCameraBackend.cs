@@ -28,7 +28,7 @@ public sealed class WpdCameraBackend : ICameraBackend
     private IPortableDevice? _device;
     private bool _connected;
 
-    public string Name => "Canon camera over WPD (USB)";
+    public string Name => "佳能相机（WPD / USB）";
 
     public bool IsConnected { get { lock (_gate) return _connected; } }
 
@@ -41,17 +41,17 @@ public sealed class WpdCameraBackend : ICameraBackend
 
     private CameraInfo ConnectCore(CancellationToken cancellationToken)
     {
-        EmitLog(LogLevel.Info, "Enumerating USB portable devices (WPD)...");
+        EmitLog(LogLevel.Info, "正在枚举 USB 便携设备（WPD）……");
 
         var manager = (IPortableDeviceManager)Wpd.CreateInstance(Wpd.CLSID_PortableDeviceManager);
         uint count = 0;
         manager.GetDevices(null, ref count);
         if (count == 0)
-            throw new InvalidOperationException("No portable/USB imaging devices were found. Connect the camera via USB and ensure it is powered on.");
+            throw new InvalidOperationException("未找到便携式或 USB 图像设备。请通过 USB 连接相机并确认相机已开机。");
 
         var deviceIds = new string[count];
         manager.GetDevices(deviceIds, ref count);
-        EmitLog(LogLevel.Debug, $"Found {count} portable device(s). Looking for a Canon camera...");
+        EmitLog(LogLevel.Debug, $"找到 {count} 个便携设备，正在查找佳能相机……");
 
         foreach (var id in deviceIds)
         {
@@ -79,10 +79,10 @@ public sealed class WpdCameraBackend : ICameraBackend
                     continue;
                 }
 
-                string serial = ReadString(values, Wpd.SerialNumber) ?? "(unknown)";
-                string firmware = ReadString(values, Wpd.FirmwareVersion) ?? "(unknown)";
+                string serial = ReadString(values, Wpd.SerialNumber) ?? "（未知）";
+                string firmware = ReadString(values, Wpd.FirmwareVersion) ?? "（未知）";
                 int battery = ReadUInt(values, Wpd.PowerLevel) is uint p ? (int)p : -1;
-                string displayModel = model ?? friendly ?? "Canon camera";
+                string displayModel = model ?? friendly ?? "佳能相机";
 
                 lock (_gate)
                 {
@@ -91,15 +91,15 @@ public sealed class WpdCameraBackend : ICameraBackend
                 }
                 device = null; // ownership transferred
 
-                EmitLog(LogLevel.Success, $"Connected to {displayModel}, S/N {serial}, FW {firmware}.");
+                EmitLog(LogLevel.Success, $"已连接 {displayModel}，序列号 {serial}，固件 {firmware}。");
                 EmitLog(LogLevel.Warning,
-                    "Note: menu-language read/write is not exposed over WPD. Connection shows real device data only.");
+                    "注意：WPD 不提供菜单语言读写能力；当前连接只能读取真实设备信息。");
 
                 return new CameraInfo(displayModel, serial, firmware, battery, "USB (WPD)");
             }
             catch (Exception ex)
             {
-                EmitLog(LogLevel.Debug, $"Skipped a device ({ex.Message}).");
+                EmitLog(LogLevel.Debug, $"已跳过一个设备（{ex.Message}）。");
             }
             finally
             {
@@ -109,8 +109,7 @@ public sealed class WpdCameraBackend : ICameraBackend
         }
 
         throw new InvalidOperationException(
-            "No Canon camera was detected among the connected USB devices. Make sure the camera is on, " +
-            "connected via USB, and not busy in another program.");
+            "已连接的 USB 设备中没有检测到佳能相机。请确认相机已开机、通过 USB 连接，且未被其他程序占用。");
     }
 
     public Task DisconnectAsync(CancellationToken cancellationToken = default)
@@ -124,7 +123,7 @@ public sealed class WpdCameraBackend : ICameraBackend
         }
         if (device is not null)
             SafeClose(device);
-        EmitLog(LogLevel.Info, "Camera disconnected.");
+        EmitLog(LogLevel.Info, "相机连接已断开。");
         return Task.CompletedTask;
     }
 
@@ -159,8 +158,8 @@ public sealed class WpdCameraBackend : ICameraBackend
     }
 
     private static NotSupportedException Unsupported() => new(
-        "Setting/unlocking the camera menu language is not possible over WPD. It requires Canon's " +
-        "undocumented service-mode protocol (not available in the public EDSDK and not published for the EOS R50).");
+        "WPD 无法设置或解锁相机菜单语言。该功能需要佳能未公开的服务模式协议；" +
+        "公开 EDSDK 不提供此能力，EOS R50 的相关协议也没有公开资料。");
 
     private static bool IsCanonCamera(string? manufacturer, string? model, string? friendly)
     {

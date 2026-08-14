@@ -67,10 +67,10 @@ public static class MtpCommandProbe
             var clientInfo = (IPortableDeviceValues)Wpd.CreateInstance(Wpd.CLSID_PortableDeviceValues);
             device.Open(deviceId, clientInfo);
 
-            log?.Invoke("Sending MTP query: GET_VENDOR_EXTENSION_DESCRIPTION (read-only)...");
+            log?.Invoke("正在发送 MTP 查询：GET_VENDOR_EXTENSION_DESCRIPTION（只读）……");
             string? description = TryGetDescription(device);
 
-            log?.Invoke("Sending MTP query: GET_SUPPORTED_VENDOR_OPCODES (read-only)...");
+            log?.Invoke("正在发送 MTP 查询：GET_SUPPORTED_VENDOR_OPCODES（只读）……");
             var opcodes = TryGetVendorOpcodes(device);
 
             return new MtpCapabilities(deviceId, model, description, opcodes, null);

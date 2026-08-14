@@ -89,21 +89,21 @@ public static class EosSessionProbe
             uint[] usedMode = { 1, 0x15 };
             foreach (var mode in usedMode)
             {
-                log?.Invoke($"Entering PC-remote mode (SetRemoteMode={mode})...");
+                log?.Invoke($"正在进入电脑遥控模式（SetRemoteMode={mode}）……");
                 mtp.ExecNoData(OcSetRemoteMode, new uint[] { mode });
                 mtp.ExecNoData(OcSetEventMode, new uint[] { 1 });
 
-                log?.Invoke("Reading EOS device info (GetDeviceInfoEx, read-only)...");
+                log?.Invoke("正在读取 EOS 设备信息（GetDeviceInfoEx，只读）……");
                 di = mtp.ExecReadData(OcGetDeviceInfoEx, Array.Empty<uint>());
                 if (di.Length >= 12)
                     break;
-                log?.Invoke($"  Mode {mode} returned {di.Length} bytes; trying next mode...");
+                log?.Invoke($"  模式 {mode} 返回 {di.Length} 字节，正在尝试下一模式……");
             }
 
             var (events, props, _) = ParseDeviceInfoEx(di);
-            log?.Invoke($"EOS reports {events.Count} events, {props.Count} device properties.");
+            log?.Invoke($"EOS 返回 {events.Count} 个事件、{props.Count} 个设备属性。");
 
-            log?.Invoke("Reading current property values (GetEvent, read-only)...");
+            log?.Invoke("正在读取当前属性值（GetEvent，只读）……");
             var values = ReadCurrentValues(mtp, log);
 
             var propList = new List<EosProperty>();

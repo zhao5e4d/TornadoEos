@@ -117,4 +117,29 @@ public class CameraServiceTests
         Assert.Equal(ConnectionState.Disconnected, service.State);
         Assert.Null(service.CameraInfo);
     }
+
+    [Fact]
+    public void Language_catalog_has_simplified_chinese_display_names()
+    {
+        var chinese = CameraLanguages.FindByIso("zh-CN");
+
+        Assert.NotNull(chinese);
+        Assert.Equal("简体中文", chinese!.ChineseName);
+        Assert.Equal("简体中文（简体中文）", chinese.ToString());
+    }
+
+    [Fact]
+    public async Task Simulated_workflow_emits_chinese_user_messages()
+    {
+        using var service = NewService();
+        var messages = new System.Collections.Generic.List<string>();
+        service.LogReceived += (_, entry) => messages.Add(entry.Message);
+
+        await service.ConnectAsync();
+        await service.SetMenuLanguageAsync("zh-CN");
+
+        Assert.Contains(messages, message => message.Contains("已连接"));
+        Assert.Contains(messages, message => message.Contains("简体中文"));
+        Assert.Contains(messages, message => message.Contains("区域语言锁"));
+    }
 }

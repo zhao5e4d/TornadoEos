@@ -21,7 +21,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private bool _isConnected;
     private bool _isBusy;
     private bool _isDiagnosticsRunning;
-    private string _connectionStatus = "Disconnected";
+    private string _connectionStatus = "未连接";
     private string _cameraModel = "—";
     private string _serialNumber = "—";
     private string _firmwareVersion = "—";
@@ -34,7 +34,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private int _progressValue;
     private string _progressText = string.Empty;
     private bool _isProgressVisible;
-    private string _diagnosticsSummary = "Run diagnostics to inspect WPD, MTP, and EOS properties (read-only).";
+    private string _diagnosticsSummary = "运行诊断可只读检查 WPD、MTP 和 EOS 属性，不会修改相机。";
     private string _diagnosticsReport = string.Empty;
 
     public MainViewModel() : this(new CameraService(new TornadoEos.Hardware.WpdCameraBackend()))
@@ -48,7 +48,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         foreach (var language in CameraLanguages.All)
             Languages.Add(language);
-        _selectedLanguage = CameraLanguages.FindByIso("en");
+        _selectedLanguage = CameraLanguages.FindByIso("zh-CN");
 
         _service.LogReceived += OnLog;
         _service.StateChanged += OnStateChanged;
@@ -62,7 +62,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         CopyDiagnosticsCommand = new AsyncRelayCommand(CopyDiagnosticsAsync, () => HasDiagnosticsReport && !IsDiagnosticsRunning);
         SaveDiagnosticsCommand = new AsyncRelayCommand(SaveDiagnosticsAsync, () => HasDiagnosticsReport && !IsDiagnosticsRunning);
 
-        Log(LogLevel.Info, "Tornado EOS ready. Connect a camera to begin.");
+        Log(LogLevel.Info, "Tornado EOS 已就绪，请连接相机开始使用。");
     }
 
     public ObservableCollection<CameraLanguage> Languages { get; } = new();
@@ -167,13 +167,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             CameraModel = info.ModelName;
             SerialNumber = info.SerialNumber;
             FirmwareVersion = info.FirmwareVersion;
-            BatteryText = info.BatteryPercent >= 0 ? $"{info.BatteryPercent}%" : "N/A";
+            BatteryText = info.BatteryPercent >= 0 ? $"{info.BatteryPercent}%" : "无法读取";
             PortDescription = info.PortDescription;
             LanguageLockEnabled = _service.IsLanguageLockEnabled;
         }
         catch (Exception ex)
         {
-            Log(LogLevel.Error, $"Connect failed: {ex.Message}");
+            Log(LogLevel.Error, $"连接失败：{ex.Message}");
         }
     }
 
@@ -187,7 +187,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            Log(LogLevel.Error, $"Disconnect failed: {ex.Message}");
+            Log(LogLevel.Error, $"断开连接失败：{ex.Message}");
         }
     }
 
@@ -204,7 +204,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            Log(LogLevel.Error, $"Failed to set language: {ex.Message}");
+            Log(LogLevel.Error, $"设置语言失败：{ex.Message}");
         }
         finally
         {
@@ -219,11 +219,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             IsDiagnosticsRunning = true;
-            Log(LogLevel.Info, "Starting read-only camera diagnostics (WPD + MTP + EOS)...");
+            Log(LogLevel.Info, "正在启动只读相机诊断（WPD + MTP + EOS）……");
 
             if (IsConnected)
             {
-                Log(LogLevel.Info, "Disconnecting first so diagnostics can open an exclusive USB session.");
+                Log(LogLevel.Info, "将先断开当前连接，以便诊断程序独占访问 USB 会话。");
                 await _service.DisconnectAsync().ConfigureAwait(true);
                 CameraModel = SerialNumber = FirmwareVersion = BatteryText = PortDescription = "—";
                 CurrentLanguageText = "—";
@@ -234,12 +234,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
             DiagnosticsReport = result.ReportText;
             DiagnosticsSummary = result.SummaryText;
-            Log(LogLevel.Info, $"Diagnostics complete. {result.SummaryText}");
+            Log(LogLevel.Info, $"诊断完成。{result.SummaryText}");
         }
         catch (Exception ex)
         {
-            Log(LogLevel.Error, $"Diagnostics failed: {ex.Message}");
-            DiagnosticsSummary = "Diagnostics failed — see activity log.";
+            Log(LogLevel.Error, $"诊断失败：{ex.Message}");
+            DiagnosticsSummary = "诊断失败，请查看操作日志。";
         }
         finally
         {
@@ -252,7 +252,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (HasDiagnosticsReport)
         {
             Clipboard.SetText(DiagnosticsReport);
-            Log(LogLevel.Info, "Diagnostics report copied to clipboard.");
+            Log(LogLevel.Info, "诊断报告已复制到剪贴板。");
         }
         return Task.CompletedTask;
     }
@@ -264,8 +264,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         var dialog = new SaveFileDialog
         {
-            Title = "Save diagnostics report",
-            Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*",
+            Title = "保存诊断报告",
+            Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
             FileName = $"tornado-eos-diagnostics-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
             DefaultExt = ".txt",
         };
@@ -274,7 +274,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             return Task.CompletedTask;
 
         File.WriteAllText(dialog.FileName, DiagnosticsReport);
-        Log(LogLevel.Info, $"Diagnostics report saved to {dialog.FileName}");
+        Log(LogLevel.Info, $"诊断报告已保存到：{dialog.FileName}");
         return Task.CompletedTask;
     }
 
@@ -282,12 +282,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         ConnectionStatus = state switch
         {
-            ConnectionState.Disconnected => "Disconnected",
-            ConnectionState.Connecting => "Connecting…",
-            ConnectionState.Connected => "Connected",
-            ConnectionState.ServiceMode => "Service mode",
-            ConnectionState.Busy => "Working…",
-            ConnectionState.Error => "Error",
+            ConnectionState.Disconnected => "未连接",
+            ConnectionState.Connecting => "正在连接…",
+            ConnectionState.Connected => "已连接",
+            ConnectionState.ServiceMode => "服务模式",
+            ConnectionState.Busy => "正在处理…",
+            ConnectionState.Error => "发生错误",
             _ => state.ToString(),
         };
         IsConnected = state is ConnectionState.Connected or ConnectionState.ServiceMode or ConnectionState.Busy;
@@ -301,7 +301,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     });
 
     private void OnCurrentLanguageChanged(object? sender, CameraLanguage language) => OnUi(() =>
-        CurrentLanguageText = $"{language.EnglishName} ({language.NativeName})");
+        CurrentLanguageText = $"{language.ChineseName}（{language.NativeName}）");
 
     private void OnLog(object? sender, LogEntry entry) => OnUi(() => LogEntries.Add(entry));
 

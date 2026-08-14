@@ -30,7 +30,7 @@ public sealed class SimulatedCameraBackend : ICameraBackend
         _timing = timing ?? TimeProfile.Realistic;
     }
 
-    public string Name => "Simulated EOS R50";
+    public string Name => "模拟 EOS R50";
 
     public bool IsConnected { get { lock (_gate) return _connected; } }
 
@@ -40,7 +40,7 @@ public sealed class SimulatedCameraBackend : ICameraBackend
 
     public async Task<CameraInfo> ConnectAsync(CancellationToken cancellationToken = default)
     {
-        EmitLog(LogLevel.Info, "Scanning USB bus for Canon EOS devices...");
+        EmitLog(LogLevel.Info, "正在扫描 USB 总线中的佳能 EOS 设备……");
         await Delay(_timing.Connect, cancellationToken).ConfigureAwait(false);
 
         lock (_gate)
@@ -54,9 +54,9 @@ public sealed class SimulatedCameraBackend : ICameraBackend
             SerialNumber: "31" + Random.Shared.Next(0, 999999).ToString("D6") + "8",
             FirmwareVersion: "1.1.0",
             BatteryPercent: Random.Shared.Next(45, 100),
-            PortDescription: "USB (simulated)");
+            PortDescription: "USB（模拟）");
 
-        EmitLog(LogLevel.Success, $"Connected to {info.ModelName}, S/N {info.SerialNumber}, FW {info.FirmwareVersion}.");
+        EmitLog(LogLevel.Success, $"已连接 {info.ModelName}，序列号 {info.SerialNumber}，固件 {info.FirmwareVersion}。");
         return info;
     }
 
@@ -68,16 +68,16 @@ public sealed class SimulatedCameraBackend : ICameraBackend
             _connected = false;
             _serviceMode = false;
         }
-        EmitLog(LogLevel.Info, "Camera disconnected.");
+        EmitLog(LogLevel.Info, "相机连接已断开。");
     }
 
     public async Task EnterServiceModeAsync(CancellationToken cancellationToken = default)
     {
         EnsureConnected();
-        EmitLog(LogLevel.Info, "Requesting service mode (vendor PTP handshake)...");
+        EmitLog(LogLevel.Info, "正在请求服务模式（厂商 PTP 握手）……");
         await Delay(_timing.ServiceMode, cancellationToken).ConfigureAwait(false);
         lock (_gate) _serviceMode = true;
-        EmitLog(LogLevel.Success, "Service mode active. Firmware properties are now writable.");
+        EmitLog(LogLevel.Success, "服务模式已启用，固件属性现在可写（仅模拟后端）。");
     }
 
     public async Task<IReadOnlyList<CameraLanguage>> GetAvailableLanguagesAsync(CancellationToken cancellationToken = default)
@@ -115,11 +115,11 @@ public sealed class SimulatedCameraBackend : ICameraBackend
         if (!available)
             throw new UnsupportedLanguageException(language.IsoCode);
 
-        EmitLog(LogLevel.Info, $"Writing menu language = {language.EnglishName} (id 0x{language.Id:X2})...");
-        await RunWrite(progress, "Writing language property", cancellationToken).ConfigureAwait(false);
+        EmitLog(LogLevel.Info, $"正在写入菜单语言：{language.ChineseName}（id 0x{language.Id:X2}）……");
+        await RunWrite(progress, "正在写入语言属性", cancellationToken).ConfigureAwait(false);
 
         lock (_gate) _current = language;
-        EmitLog(LogLevel.Success, $"Menu language set to {language.EnglishName}.");
+        EmitLog(LogLevel.Success, $"菜单语言已设置为{language.ChineseName}。");
     }
 
     public async Task<bool> GetLanguageLockAsync(CancellationToken cancellationToken = default)
@@ -136,14 +136,14 @@ public sealed class SimulatedCameraBackend : ICameraBackend
     {
         EnsureConnected();
         EnsureServiceMode();
-        EmitLog(LogLevel.Info, $"{(enabled ? "Enabling" : "Disabling")} regional language lock...");
-        await RunWrite(progress, "Writing language-lock property", cancellationToken).ConfigureAwait(false);
+        EmitLog(LogLevel.Info, $"正在{(enabled ? "启用" : "关闭")}区域语言锁……");
+        await RunWrite(progress, "正在写入语言锁属性", cancellationToken).ConfigureAwait(false);
         lock (_gate) _languageLock = enabled;
         EmitLog(
             LogLevel.Success,
             enabled
-                ? "Language lock enabled. Only English and Japanese are exposed."
-                : "Language lock disabled. All firmware languages are now available.");
+                ? "区域语言锁已启用，仅显示英语和日语。"
+                : "区域语言锁已关闭，固件中的全部语言现在均可选择。");
     }
 
     public void Dispose()

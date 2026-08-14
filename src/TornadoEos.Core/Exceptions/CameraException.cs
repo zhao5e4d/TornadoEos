@@ -13,19 +13,19 @@ public class CameraException : Exception
 public sealed class CameraNotConnectedException : CameraException
 {
     public CameraNotConnectedException()
-        : base("No camera is connected. Connect a camera before performing this operation.") { }
+        : base("当前未连接相机，请先连接相机再执行此操作。") { }
 }
 
 /// <summary>Raised when an operation requires service mode that has not been entered.</summary>
 public sealed class ServiceModeRequiredException : CameraException
 {
     public ServiceModeRequiredException()
-        : base("This operation requires service mode. Enter service mode first.") { }
+        : base("此操作需要服务模式，请先进入服务模式。") { }
 }
 
 /// <summary>Raised when a requested language is not part of the camera's language table.</summary>
 public sealed class UnsupportedLanguageException : CameraException
 {
     public UnsupportedLanguageException(string isoCode)
-        : base($"The language '{isoCode}' is not available on this camera body.") { }
+        : base($"当前相机不支持语言“{isoCode}”。") { }
 }
