@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1BD56973-468A-4846-BADE-3688B7848EE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TornadoEos.Core", "src\TornadoEos.Core\TornadoEos.Core.csproj", "{7D4F4702-D700-47AC-920B-DD0E91A5227E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TornadoEos.App", "src\TornadoEos.App\TornadoEos.App.csproj", "{AEBDF973-2B5D-4936-B218-6A0F922B650F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E9DA98AA-1223-4E8E-8FCB-D71CE5BB39DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TornadoEos.Tests", "tests\TornadoEos.Tests\TornadoEos.Tests.csproj", "{912959F9-BEED-4FBF-BFC4-CB36E04E3184}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TornadoEos.Hardware", "src\TornadoEos.Hardware\TornadoEos.Hardware.csproj", "{30F55A85-4E13-4107-ACBE-6E572FFD6A4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9631E6B4-C500-47A7-9E1C-1CCC4E0625B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpdProbe", "tools\WpdProbe\WpdProbe.csproj", "{5933CC77-580F-4BD7-AC8A-673BA5AA4223}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D4F4702-D700-47AC-920B-DD0E91A5227E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D4F4702-D700-47AC-920B-DD0E91A5227E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D4F4702-D700-47AC-920B-DD0E91A5227E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D4F4702-D700-47AC-920B-DD0E91A5227E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEBDF973-2B5D-4936-B218-6A0F922B650F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEBDF973-2B5D-4936-B218-6A0F922B650F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEBDF973-2B5D-4936-B218-6A0F922B650F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEBDF973-2B5D-4936-B218-6A0F922B650F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{912959F9-BEED-4FBF-BFC4-CB36E04E3184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{912959F9-BEED-4FBF-BFC4-CB36E04E3184}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{912959F9-BEED-4FBF-BFC4-CB36E04E3184}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{912959F9-BEED-4FBF-BFC4-CB36E04E3184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F55A85-4E13-4107-ACBE-6E572FFD6A4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F55A85-4E13-4107-ACBE-6E572FFD6A4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F55A85-4E13-4107-ACBE-6E572FFD6A4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F55A85-4E13-4107-ACBE-6E572FFD6A4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5933CC77-580F-4BD7-AC8A-673BA5AA4223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5933CC77-580F-4BD7-AC8A-673BA5AA4223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5933CC77-580F-4BD7-AC8A-673BA5AA4223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5933CC77-580F-4BD7-AC8A-673BA5AA4223}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7D4F4702-D700-47AC-920B-DD0E91A5227E} = {1BD56973-468A-4846-BADE-3688B7848EE7}
+		{AEBDF973-2B5D-4936-B218-6A0F922B650F} = {1BD56973-468A-4846-BADE-3688B7848EE7}
+		{912959F9-BEED-4FBF-BFC4-CB36E04E3184} = {E9DA98AA-1223-4E8E-8FCB-D71CE5BB39DA}
+		{30F55A85-4E13-4107-ACBE-6E572FFD6A4B} = {1BD56973-468A-4846-BADE-3688B7848EE7}
+		{5933CC77-580F-4BD7-AC8A-673BA5AA4223} = {9631E6B4-C500-47A7-9E1C-1CCC4E0625B0}
+	EndGlobalSection
+EndGlobal
