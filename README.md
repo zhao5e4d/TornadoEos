@@ -136,3 +136,7 @@ dotnet run --project tools/WpdProbe          # console: read-only PTP/WPD proper
 Implement `ICameraBackend` (or fill in `ServiceModeCameraBackend`) with a verified
 USB/PTP service‑mode protocol for your target body, then construct
 `new CameraService(new YourBackend())`. The UI, view model and tests are untouched.
+
+## License
+
+[MIT](LICENSE)
