@@ -65,6 +65,8 @@ dotnet run --project tools/WpdProbe
 
 `SimulatedCameraBackend` 用于演示和测试完整流程：连接模拟 EOS R50、进入模拟服务模式、关闭模拟语言锁并切换菜单语言。它不会接触真实硬件。
 
+应用内可勾选“演示模式”（默认关闭）启用该后端，无需连接真机。
+
 ## 环境要求
 
 - Windows 10/11

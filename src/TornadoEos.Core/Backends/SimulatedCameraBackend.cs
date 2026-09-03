@@ -32,6 +32,10 @@ public sealed class SimulatedCameraBackend : ICameraBackend
 
     public string Name => "模拟 EOS R50";
 
+    public bool SupportsMenuLanguageWrite => true;
+
+    public bool IsSimulation => true;
+
     public bool IsConnected { get { lock (_gate) return _connected; } }
 
     public bool IsInServiceMode { get { lock (_gate) return _serviceMode; } }

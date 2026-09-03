@@ -13,6 +13,15 @@ public class BackendTests
         new(SimulatedCameraBackend.TimeProfile.Instant);
 
     [Fact]
+    public void Simulated_backend_reports_its_capabilities()
+    {
+        using var backend = NewBackend();
+
+        Assert.True(backend.SupportsMenuLanguageWrite);
+        Assert.True(backend.IsSimulation);
+    }
+
+    [Fact]
     public async Task Writing_language_without_service_mode_throws()
     {
         using var backend = NewBackend();
@@ -53,6 +62,9 @@ public class BackendTests
     {
         using var backend = new ServiceModeCameraBackend();
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => backend.ConnectAsync());
+        Assert.False(backend.SupportsMenuLanguageWrite);
+        Assert.False(backend.IsSimulation);
+        var error = await Assert.ThrowsAsync<NotSupportedException>(() => backend.ConnectAsync());
+        Assert.Contains("未包含", error.Message);
     }
 }

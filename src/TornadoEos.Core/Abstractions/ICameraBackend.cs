@@ -22,6 +22,12 @@ public interface ICameraBackend : IDisposable
     /// <summary>Stable identifier of the backend implementation (for diagnostics).</summary>
     string Name { get; }
 
+    /// <summary>True when this backend can write the camera menu language.</summary>
+    bool SupportsMenuLanguageWrite { get; }
+
+    /// <summary>True when the backend operates entirely in memory without real hardware.</summary>
+    bool IsSimulation { get; }
+
     bool IsConnected { get; }
 
     bool IsInServiceMode { get; }
