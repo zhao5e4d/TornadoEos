@@ -30,6 +30,10 @@ public sealed class WpdCameraBackend : ICameraBackend
 
     public string Name => "佳能相机（WPD / USB）";
 
+    public bool SupportsMenuLanguageWrite => false;
+
+    public bool IsSimulation => false;
+
     public bool IsConnected { get { lock (_gate) return _connected; } }
 
     public bool IsInServiceMode => false;

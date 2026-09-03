@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using TornadoEos.App.Mvvm;
+using TornadoEos.Core.Backends;
 using TornadoEos.Core.Logging;
 using TornadoEos.Core.Models;
 using TornadoEos.Core.Services;
@@ -15,7 +16,7 @@ namespace TornadoEos.App.ViewModels;
 
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
-    private readonly CameraService _service;
+    private CameraService _service;
     private readonly Dispatcher _dispatcher;
 
     private bool _isConnected;
@@ -29,12 +30,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private string _portDescription = "—";
     private string _currentLanguageText = "—";
     private bool _languageLockEnabled;
+    private bool _languageLockKnown;
+    private bool _isDemoMode;
+    private bool _isSwitchingBackend;
     private bool _autoUnlock = true;
     private CameraLanguage? _selectedLanguage;
     private int _progressValue;
     private string _progressText = string.Empty;
     private bool _isProgressVisible;
-    private string _diagnosticsSummary = "运行诊断可只读检查 WPD、MTP 和 EOS 属性，不会修改相机。";
+    private string _diagnosticsSummary = "注意：若当前已连接相机，运行诊断会先断开本次连接。诊断只读取 WPD、MTP 和 EOS 属性，不会修改相机。";
     private string _diagnosticsReport = string.Empty;
 
     public MainViewModel() : this(new CameraService(new TornadoEos.Hardware.WpdCameraBackend()))
@@ -45,19 +49,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         _service = service ?? throw new ArgumentNullException(nameof(service));
         _dispatcher = Dispatcher.CurrentDispatcher;
+        _isDemoMode = _service.IsSimulation;
 
         foreach (var language in CameraLanguages.All)
             Languages.Add(language);
         _selectedLanguage = CameraLanguages.FindByIso("zh-CN");
 
-        _service.LogReceived += OnLog;
-        _service.StateChanged += OnStateChanged;
-        _service.ProgressChanged += OnProgress;
-        _service.CurrentLanguageChanged += OnCurrentLanguageChanged;
+        WireService(_service);
 
         ConnectCommand = new AsyncRelayCommand(ConnectAsync, () => !IsConnected && !IsBusy && !IsDiagnosticsRunning);
         DisconnectCommand = new AsyncRelayCommand(DisconnectAsync, () => IsConnected && !IsBusy && !IsDiagnosticsRunning);
-        ApplyLanguageCommand = new AsyncRelayCommand(ApplyLanguageAsync, () => IsConnected && !IsBusy && !IsDiagnosticsRunning && SelectedLanguage is not null);
+        ApplyLanguageCommand = new AsyncRelayCommand(ApplyLanguageAsync, () => IsConnected && !IsBusy && !IsDiagnosticsRunning && SelectedLanguage is not null && SupportsMenuLanguageWrite);
         RunDiagnosticsCommand = new AsyncRelayCommand(RunDiagnosticsAsync, () => !IsBusy && !IsDiagnosticsRunning);
         CopyDiagnosticsCommand = new AsyncRelayCommand(CopyDiagnosticsAsync, () => HasDiagnosticsReport && !IsDiagnosticsRunning);
         SaveDiagnosticsCommand = new AsyncRelayCommand(SaveDiagnosticsAsync, () => HasDiagnosticsReport && !IsDiagnosticsRunning);
@@ -88,6 +90,35 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         private set { if (SetProperty(ref _isBusy, value)) RaiseCommandStates(); }
     }
 
+    public bool SupportsMenuLanguageWrite => _service.SupportsMenuLanguageWrite;
+
+    public bool IsDemoMode
+    {
+        get => _isDemoMode;
+        set
+        {
+            if (value == _isDemoMode)
+                return;
+            if (!CanSwitchBackend)
+            {
+                OnPropertyChanged();
+                return;
+            }
+
+            _ = SwitchBackendAsync(value);
+        }
+    }
+
+    public bool CanSwitchBackend => !IsBusy && !IsDiagnosticsRunning && !_isSwitchingBackend;
+
+    public string LanguageCapabilityNotice => IsDemoMode
+        ? "演示模式：可安全演示改语言，不接触真机。"
+        : "当前为真机只读连接，无法修改菜单语言。";
+
+    public string CameraEmptyStateText => IsDemoMode
+        ? "演示模式无需连接真机，点击「连接相机」即可体验模拟 EOS R50。"
+        : "请用 USB 连接相机并确认已开机";
+
     public string ConnectionStatus
     {
         get => _connectionStatus;
@@ -109,8 +140,28 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public bool LanguageLockEnabled
     {
         get => _languageLockEnabled;
-        private set => SetProperty(ref _languageLockEnabled, value);
+        private set
+        {
+            if (SetProperty(ref _languageLockEnabled, value))
+                OnPropertyChanged(nameof(LanguageLockText));
+        }
     }
+
+    public bool LanguageLockKnown
+    {
+        get => _languageLockKnown;
+        private set
+        {
+            if (SetProperty(ref _languageLockKnown, value))
+                OnPropertyChanged(nameof(LanguageLockText));
+        }
+    }
+
+    public string LanguageLockText => !LanguageLockKnown
+        ? "—"
+        : LanguageLockEnabled
+            ? "已启用（仅英语、日语）"
+            : "已关闭（全部语言可见）";
 
     public bool AutoUnlock
     {
@@ -170,6 +221,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             BatteryText = info.BatteryPercent >= 0 ? $"{info.BatteryPercent}%" : "无法读取";
             PortDescription = info.PortDescription;
             LanguageLockEnabled = _service.IsLanguageLockEnabled;
+            LanguageLockKnown = true;
         }
         catch (Exception ex)
         {
@@ -182,8 +234,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             await _service.DisconnectAsync();
-            CameraModel = SerialNumber = FirmwareVersion = BatteryText = PortDescription = "—";
-            CurrentLanguageText = "—";
+            ResetCameraInfo();
         }
         catch (Exception ex)
         {
@@ -201,6 +252,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             IsProgressVisible = true;
             await _service.SetMenuLanguageAsync(target, AutoUnlock);
             LanguageLockEnabled = _service.IsLanguageLockEnabled;
+            LanguageLockKnown = true;
         }
         catch (Exception ex)
         {
@@ -225,8 +277,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             {
                 Log(LogLevel.Info, "将先断开当前连接，以便诊断程序独占访问 USB 会话。");
                 await _service.DisconnectAsync().ConfigureAwait(true);
-                CameraModel = SerialNumber = FirmwareVersion = BatteryText = PortDescription = "—";
-                CurrentLanguageText = "—";
+                ResetCameraInfo();
             }
 
             var result = await Task.Run(() => CameraDiagnostics.Run(msg =>
@@ -292,7 +343,77 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         };
         IsConnected = state is ConnectionState.Connected or ConnectionState.ServiceMode or ConnectionState.Busy;
         IsBusy = state is ConnectionState.Connecting or ConnectionState.Busy;
+        if (state == ConnectionState.Disconnected)
+            ResetCameraInfo();
     });
+
+    private async Task SwitchBackendAsync(bool useDemoMode)
+    {
+        _isSwitchingBackend = true;
+        OnPropertyChanged(nameof(CanSwitchBackend));
+        RaiseCommandStates();
+
+        try
+        {
+            if (IsConnected)
+            {
+                await _service.DisconnectAsync().ConfigureAwait(true);
+                ResetCameraInfo();
+            }
+
+            var oldService = _service;
+            UnwireService(oldService);
+            _service = new CameraService(useDemoMode
+                ? new SimulatedCameraBackend()
+                : new WpdCameraBackend());
+            WireService(_service);
+            oldService.Dispose();
+
+            _isDemoMode = useDemoMode;
+            OnPropertyChanged(nameof(IsDemoMode));
+            OnPropertyChanged(nameof(SupportsMenuLanguageWrite));
+            OnPropertyChanged(nameof(LanguageCapabilityNotice));
+            OnPropertyChanged(nameof(CameraEmptyStateText));
+            Log(LogLevel.Info, useDemoMode
+                ? "已切换到演示模式（模拟 EOS R50，不接触真机）。"
+                : "已切换到真机只读连接（WPD）。请用 USB 连接相机。");
+        }
+        catch (Exception ex)
+        {
+            OnPropertyChanged(nameof(IsDemoMode));
+            Log(LogLevel.Error, $"切换后端失败：{ex.Message}");
+        }
+        finally
+        {
+            _isSwitchingBackend = false;
+            OnPropertyChanged(nameof(CanSwitchBackend));
+            RaiseCommandStates();
+        }
+    }
+
+    private void ResetCameraInfo()
+    {
+        CameraModel = SerialNumber = FirmwareVersion = BatteryText = PortDescription = "—";
+        CurrentLanguageText = "—";
+        LanguageLockEnabled = false;
+        LanguageLockKnown = false;
+    }
+
+    private void WireService(CameraService service)
+    {
+        service.LogReceived += OnLog;
+        service.StateChanged += OnStateChanged;
+        service.ProgressChanged += OnProgress;
+        service.CurrentLanguageChanged += OnCurrentLanguageChanged;
+    }
+
+    private void UnwireService(CameraService service)
+    {
+        service.LogReceived -= OnLog;
+        service.StateChanged -= OnStateChanged;
+        service.ProgressChanged -= OnProgress;
+        service.CurrentLanguageChanged -= OnCurrentLanguageChanged;
+    }
 
     private void OnProgress(object? sender, ServiceProgress p) => OnUi(() =>
     {
@@ -316,6 +437,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         RunDiagnosticsCommand.RaiseCanExecuteChanged();
         CopyDiagnosticsCommand.RaiseCanExecuteChanged();
         SaveDiagnosticsCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSwitchBackend));
     }
 
     private void OnUi(Action action)
@@ -328,10 +450,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        _service.LogReceived -= OnLog;
-        _service.StateChanged -= OnStateChanged;
-        _service.ProgressChanged -= OnProgress;
-        _service.CurrentLanguageChanged -= OnCurrentLanguageChanged;
+        UnwireService(_service);
         _service.Dispose();
     }
 }

@@ -83,6 +83,25 @@
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PortDescription}" Style="{StaticResource FieldValue}" />
                     </Grid>
 
+                    <TextBlock Text="{Binding CameraEmptyStateText}"
+                               TextWrapping="Wrap" Margin="0,6,0,2">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <CheckBox Content="演示模式" IsChecked="{Binding IsDemoMode}"
+                              IsEnabled="{Binding CanSwitchBackend}"
+                              Foreground="{StaticResource TextBrush}" Margin="2,10,0,0"
+                              ToolTip="使用模拟 EOS R50，不连接或修改真机" />
+
                     <Separator Margin="0,12" Background="{StaticResource PanelBorderBrush}" />
 
                     <StackPanel Orientation="Horizontal">
@@ -95,7 +114,7 @@
                     <Button Content="运行只读诊断" Style="{StaticResource GhostButton}"
                             Command="{Binding RunDiagnosticsCommand}"
                             HorizontalAlignment="Stretch" Margin="0,12,0,0"
-                            ToolTip="只读取 WPD、MTP 和 EOS 属性，不会修改相机" />
+                            ToolTip="只读取 WPD、MTP 和 EOS 属性，不会修改相机。若当前已连接，诊断会先断开本次会话。" />
                 </StackPanel>
             </Border>
 
@@ -116,16 +135,25 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="区域语言锁" Style="{StaticResource FieldLabel}" />
-                            <TextBlock Margin="0,2,0,0" FontSize="15">
+                            <TextBlock Text="{Binding LanguageLockText}" Margin="0,2,0,0" FontSize="15">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource FieldValue}">
-                                        <Setter Property="Text" Value="已关闭（全部语言可见）" />
-                                        <Setter Property="Foreground" Value="#FF3FB950" />
+                                        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding LanguageLockEnabled}" Value="True">
-                                                <Setter Property="Text" Value="已启用（仅英语 / 日语）" />
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding LanguageLockKnown}" Value="True" />
+                                                    <Condition Binding="{Binding LanguageLockEnabled}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Foreground" Value="#FF3FB950" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding LanguageLockKnown}" Value="True" />
+                                                    <Condition Binding="{Binding LanguageLockEnabled}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
                                                 <Setter Property="Foreground" Value="#FFE3B341" />
-                                            </DataTrigger>
+                                            </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>
@@ -153,6 +181,12 @@
                     <CheckBox Content="目标语言被隐藏时，自动关闭区域语言锁"
                               IsChecked="{Binding AutoUnlock}"
                               Foreground="{StaticResource MutedBrush}" Margin="2,14,0,0" />
+
+                    <Border Background="#FF22272E" BorderBrush="{StaticResource PanelBorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,14,0,0">
+                        <TextBlock Text="{Binding LanguageCapabilityNotice}" Style="{StaticResource FieldLabel}"
+                                   TextWrapping="Wrap" />
+                    </Border>
 
                     <Button Content="应用到相机" Style="{StaticResource PrimaryButton}"
                             Command="{Binding ApplyLanguageCommand}"
@@ -205,6 +239,10 @@
 
                 <TabItem Header="只读诊断">
                     <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="注意：若当前已连接相机，运行诊断会先断开本次连接。诊断只读取 WPD、MTP 和 EOS 属性，不会修改相机。"
+                                   Foreground="#FFE3B341" FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,0,0,10" />
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
                             <Button Content="运行诊断" Style="{StaticResource PrimaryButton}"
                                     Command="{Binding RunDiagnosticsCommand}" Width="150" Margin="0,0,10,0" />

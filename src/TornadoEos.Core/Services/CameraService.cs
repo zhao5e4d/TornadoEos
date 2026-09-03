@@ -36,6 +36,10 @@ public sealed class CameraService : IDisposable
 
     public bool IsLanguageLockEnabled { get; private set; }
 
+    public bool SupportsMenuLanguageWrite => _backend.SupportsMenuLanguageWrite;
+
+    public bool IsSimulation => _backend.IsSimulation;
+
     public event EventHandler<ConnectionState>? StateChanged;
     public event EventHandler<LogEntry>? LogReceived;
     public event EventHandler<ServiceProgress>? ProgressChanged;

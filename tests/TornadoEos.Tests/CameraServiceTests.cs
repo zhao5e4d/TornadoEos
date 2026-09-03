@@ -13,6 +13,15 @@ public class CameraServiceTests
         new(new SimulatedCameraBackend(SimulatedCameraBackend.TimeProfile.Instant));
 
     [Fact]
+    public void Exposes_backend_capabilities()
+    {
+        using var service = NewService();
+
+        Assert.True(service.SupportsMenuLanguageWrite);
+        Assert.True(service.IsSimulation);
+    }
+
+    [Fact]
     public async Task Connect_returns_r50_info_and_starts_locked()
     {
         using var service = NewService();

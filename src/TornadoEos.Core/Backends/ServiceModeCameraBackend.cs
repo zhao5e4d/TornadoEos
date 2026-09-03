@@ -39,6 +39,10 @@ public sealed class ServiceModeCameraBackend : ICameraBackend
 
     public string Name => "佳能服务模式（USB/PTP）— 尚未实现";
 
+    public bool SupportsMenuLanguageWrite => false;
+
+    public bool IsSimulation => false;
+
     public bool IsConnected => false;
 
     public bool IsInServiceMode => false;
